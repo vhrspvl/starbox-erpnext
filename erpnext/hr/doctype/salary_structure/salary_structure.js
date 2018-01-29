@@ -106,8 +106,18 @@ frappe.ui.form.on('Salary Structure', {
 	},
 
 	salary_slip_based_on_timesheet: function(frm) {
-		frm.trigger("toggle_fields")
-	},
+        frm.trigger("toggle_fields")
+        var grid = frm.fields_dict.employees.grid;
+            for (d = 0; d < cur_frm.doc.employees.length; d++) {
+                grid = cur_frm.get_field("employees").grid;
+                grid_row = grid.get_row(d);
+
+            }
+        var base = grid_row.doc.base;
+        var ot = (((base * .35) + (base * .25)) / 26) / 8
+        frm.set_value("salary_component", 'Overtime');
+        frm.set_value("hour_rate", flt(ot * 2));
+        },
 
 	preview_salary_slip: function(frm) {
 		var d = new frappe.ui.Dialog({
