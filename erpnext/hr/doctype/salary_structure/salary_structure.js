@@ -115,7 +115,7 @@ frappe.ui.form.on('Salary Structure', {
             }
         var base = grid_row.doc.base;
         var ot = (((base * .35) + (base * .25)) / 26) / 8
-        frm.set_value("salary_component", 'Overtime');
+        frm.set_value("salary_component", 'Incentives');
         frm.set_value("hour_rate", flt(ot * 2));
         },
 

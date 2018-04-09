@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
+import math
 from frappe.utils import flt
 from frappe import _
 
@@ -28,12 +29,12 @@ def execute(filters=None):
 		for e in earning_types:
 			row.append(ss_earning_map.get(ss.name, {}).get(e))
 
-		row += [ss.gross_pay]
+		row += [round(ss.gross_pay)]
 
 		for d in ded_types:
 			row.append(ss_ded_map.get(ss.name, {}).get(d))
 
-		row += [ss.total_deduction, ss.net_pay]
+		row += [round(ss.total_deduction), round(ss.net_pay)]
 
 		data.append(row)
 
@@ -52,7 +53,7 @@ def get_columns(salary_slips):
 		_("Salary Slip ID") + ":Link/Salary Slip:150",_("Employee") + ":Link/Employee:120", _("Employee Name") + "::140", _("Branch") + ":Link/Branch:-1",
 		_("Department") + ":Link/Department:-1", _("Designation") + ":Link/Designation:-1",
 		_("Company") + ":Link/Company:120", _("Start Date") + "::80", _("End Date") + "::80", _("Leave Without Pay") + ":Float:-1",
-		_("Payment Days") + ":Float:120"
+		_("Payment Days") + ":Int:120"
 	]	
 
 	salary_components = {_("Earning"): [], _("Deduction"): []}
@@ -97,18 +98,24 @@ def get_ss_earning_map(salary_slips):
 	ss_earning_map = {}
 	for d in ss_earnings:
 		ss_earning_map.setdefault(d.parent, frappe._dict()).setdefault(d.salary_component, [])
-		ss_earning_map[d.parent][d.salary_component] = flt(d.amount)
+		ss_earning_map[d.parent][d.salary_component] = round(d.amount)
 
 	return ss_earning_map
 
 def get_ss_ded_map(salary_slips):
-	ss_deductions = frappe.db.sql("""select parent, salary_component, amount
+    ss_deductions = frappe.db.sql("""select parent, salary_component, amount
 		from `tabSalary Detail` where parent in (%s)""" %
-		(', '.join(['%s']*len(salary_slips))), tuple([d.name for d in salary_slips]), as_dict=1)
+                                  (', '.join(['%s'] * len(salary_slips))), tuple([d.name for d in salary_slips]), as_dict=1)
 
-	ss_ded_map = {}
-	for d in ss_deductions:
-		ss_ded_map.setdefault(d.parent, frappe._dict()).setdefault(d.salary_component, [])
-		ss_ded_map[d.parent][d.salary_component] = flt(d.amount)
+    ss_ded_map = {}
+    for d in ss_deductions:
+        if d.salary_component == 'Employee State Insurance':
+            ss_ded_map.setdefault(d.parent, frappe._dict()
+                                  ).setdefault(d.salary_component, [])
+            ss_ded_map[d.parent][d.salary_component] = math.ceil(d.amount)
+        else:
+            ss_ded_map.setdefault(d.parent, frappe._dict()
+                                  ).setdefault(d.salary_component, [])
+            ss_ded_map[d.parent][d.salary_component] = round(flt(d.amount))
 
-	return ss_ded_map
+    return ss_ded_map

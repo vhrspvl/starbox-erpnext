@@ -17,6 +17,9 @@ frappe.ui.form.on("Employee Attendance Tool", {
 		erpnext.employee_attendance_tool.load_employees(frm);
 	},
 
+    employment_type: function(frm) {
+		erpnext.employee_attendance_tool.load_employees(frm);
+	},
 	branch: function(frm) {
 		erpnext.employee_attendance_tool.load_employees(frm);
 	},
@@ -35,7 +38,8 @@ erpnext.employee_attendance_tool = {
 				method: "erpnext.hr.doctype.employee_attendance_tool.employee_attendance_tool.get_employees",
 				args: {
 					date: frm.doc.date,
-					department: frm.doc.department,
+                    department: frm.doc.department,
+                    employment_type:frm.doc.employment_type,
 					branch: frm.doc.branch,
 					company: frm.doc.company
 				},
@@ -125,7 +129,8 @@ erpnext.EmployeeSelector = Class.extend({
 
 		var mark_employee_toolbar = $('<div class="col-sm-12 bottom-toolbar">\
 			<button class="btn btn-primary btn-mark-present btn-xs"></button>\
-			<button class="btn btn-default btn-mark-absent btn-xs"></button>\
+            <button class="btn btn-primary btn-mark-onduty btn-xs"></button>\
+            <button class="btn btn-default btn-mark-absent btn-xs"></button>\
 			<button class="btn btn-default btn-mark-half-day btn-xs"></button></div>')
 
 		employee_toolbar.find(".btn-add")
@@ -172,7 +177,32 @@ erpnext.EmployeeSelector = Class.extend({
 					}
 				});
 			});
+        
+        mark_employee_toolbar.find(".btn-mark-onduty")
+        .html(__('Mark On Duty'))
+        .on("click", function() {
+            var employee_present = [];
+            $(me.wrapper).find('input[type="checkbox"]').each(function(i, check) {
+                if($(check).is(":checked")) {
+                    employee_present.push(employee[i]);
+                }
+            });
+            frappe.call({
+                method: "erpnext.hr.doctype.employee_attendance_tool.employee_attendance_tool.mark_employee_attendance",
+                args:{
+                    "employee_list":employee_present,
+                    "status":"On Duty",
+                    "date":frm.doc.date,
+                    "company":frm.doc.company
+                },
 
+                callback: function(r) {
+                    erpnext.employee_attendance_tool.load_employees(frm);
+
+                }
+            });
+        });
+                
 		mark_employee_toolbar.find(".btn-mark-absent")
 			.html(__('Mark Absent'))
 			.on("click", function() {

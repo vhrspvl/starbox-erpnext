@@ -43,7 +43,7 @@ class PayrollEntry(Document):
 			cond += "and t2.parent IN %(sal_struct)s "
 			emp_list = frappe.db.sql("""
 				select
-					t1.name as employee, t1.employee_name, t1.department, t1.designation
+					t1.name as employee, t1.employee_name, t1.department, t1.designation,t1.employment_type
 				from
 					`tabEmployee` t1, `tabSalary Structure Employee` t2
 				where
@@ -65,7 +65,7 @@ class PayrollEntry(Document):
 		self.check_mandatory()
 
 		cond = ''
-		for f in ['company', 'branch', 'department', 'designation']:
+		for f in ['company', 'branch', 'department', 'designation','employment_type']:
 			if self.get(f):
 				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 

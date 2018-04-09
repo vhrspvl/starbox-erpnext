@@ -220,9 +220,9 @@ class LeaveApplication(Document):
 			frappe.throw(_("{0} ({1}) must have role 'Leave Approver'")\
 				.format(get_fullname(self.leave_approver), self.leave_approver), InvalidLeaveApproverError)
 
-		elif self.docstatus==1 and len(leave_approvers) and self.leave_approver != frappe.session.user:
-			frappe.throw(_("Only the selected Leave Approver can submit this Leave Application"),
-				LeaveApproverIdentityError)
+		# elif self.docstatus==1 and self.leave_type == 'Leave Without Pay' and len(leave_approvers) and self.leave_approver != frappe.session.user:
+		# 	frappe.throw(_("Only the selected Leave Approver can submit this Leave Application"),
+		# 		LeaveApproverIdentityError)
 
 	def validate_attendance(self):
 		attendance = frappe.db.sql("""select name from `tabAttendance` where employee = %s and (attendance_date between %s and %s)
